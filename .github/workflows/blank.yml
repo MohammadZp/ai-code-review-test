@@ -20,8 +20,8 @@ jobs:
       - name: Get the diff of the current commit
         id: diff
         run: |
-          git diff --cached > diff.txt
-          echo "::set-output name=diff::$(cat diff.txt)"
+          git diff --cached > diff.txt  # Get diff of staged changes
+          echo "::set-output name=diff::$(cat diff.txt)"  # Output the diff
 
       # Step 3: Call the external review API and get the review comment
       - name: Call external review API and get review comment
