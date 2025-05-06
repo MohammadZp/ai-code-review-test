@@ -7,6 +7,13 @@ def calculate_area(X):
     return area
 
 
+ def calculate_perimeter(a):
+    # This function calculates the perimeter (circumference) of a circle
+    pi = 3.14159  # Approximation of pi
+    perimeter = 2 * pi * a
+    return perimeter
+
+
 
 def main():
     radius = 5
@@ -17,11 +24,6 @@ def main():
     print(f"The perimeter of the circle with radius {radius} is: {perimeter}") 
 
 
-    def calculate_perimeter(a):
-    # This function calculates the perimeter (circumference) of a circle
-    pi = 3.14159  # Approximation of pi
-    perimeter = 2 * pi * a
-    return perimeter
 
 
 
