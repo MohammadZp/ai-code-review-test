@@ -1,0 +1,42 @@
+name: Code Review Bot
+
+on:
+  push:
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get the diff of the current commit
+        run: |
+          git fetch origin master --depth=2 || true
+          git diff HEAD^ HEAD > diff.txt
+
+      - name: Call Review API
+        id: call_review_api
+        run: |
+          review_comment=$(curl --silent --location 'https://tidy-beers-crash.loca.lt/review' \
+            --form 'file=@diff.txt' \
+            --form 'language="python"')
+          echo "$review_comment"
+          echo "review_comment<<EOF" >> $GITHUB_ENV
+          echo "$review_comment" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Comment on commit
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ -n "$review_comment" ]]; then
+            curl -X POST \
+              -H "Authorization: token $GH_TOKEN" \
+              -H "Accept: application/vnd.github.v3+json" \
+              -d "{\"body\": \"$review_comment\"}" \
+              "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments"
+          else
+            echo "No review comment to post."
+          fi
