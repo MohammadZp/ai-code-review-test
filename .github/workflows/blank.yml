@@ -1,0 +1,37 @@
+name: Code Review CI
+
+# Trigger the workflow on every commit to the main branch and pull requests to main
+on:
+  push:
+    branches:
+      - main  # Or any other branch you want to trigger on commit
+  pull_request:
+    branches:
+      - main  # Trigger on PRs to main branch
+
+jobs:
+  review:
+    runs-on: ubuntu-latest  # You can use another OS if preferred (ubuntu-latest is used here)
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2  # This action checks out the code in your repository
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'  # Use a specific Python version if needed
+
+      - name: Install curl and other dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl  # Make sure curl is installed
+
+      - name: Send code to review API
+        run: |
+          # Send the code to the review API without authentication
+          curl --location 'https://wild-buses-ring.loca.lt/review' \
+          --form 'file=@"/path/to/your/file.py"' \
+          --form 'language="python"'  # Modify as needed for other languages
+
+      # Optionally, print output or store results somewhere, e.g., a log file
