@@ -27,7 +27,7 @@ jobs:
       - name: Call Review API
         id: call_review_api
         run: |
-          REVIEW_COMMENT=$(curl --silent --location 'https://tidy-beers-crash.loca.lt/review' \
+          REVIEW_COMMENT=$(curl --silent --location 'https://wild-buses-ring.loca.lt/review' \
             --form 'file=@"diff.py"' \
             --form 'language="python"')
           echo "Review Comment:"
