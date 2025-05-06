@@ -1,18 +1,18 @@
 
-
-
-
-def calculate_area(radius):
-    # This function calculates the area of a circle
-    pi = 3.14159  # Approximation of pi
-    area = pi * radius ** 2
-    return area
-
 def calculate_perimeter(a):
     # This function calculates the perimeter (circumference) of a circle
     pi = 3.14159  # Approximation of pi
     perimeter = 2 * pi * a
     return perimeter
+
+
+def calculate_area(X):
+    # This function calculates the area of a circle
+    pi = 3.14159  # Approximation of pi
+    area = pi * X ** 2
+    return area
+
+
 
 
 
