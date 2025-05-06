@@ -13,8 +13,16 @@ jobs:
 
       - name: Get the diff of the current commit
         run: |
+          # Ensure we're getting the latest commit
           git fetch origin main --depth=2 || true
-          git diff HEAD^ HEAD > diff.py
+          
+          # Check if we have any commits in the history
+          if git rev-parse HEAD^1 >/dev/null 2>&1; then
+            git diff HEAD^ HEAD > diff.py
+          else
+            echo "No previous commit to compare, skipping diff."
+            echo "No diff available" > diff.py
+          fi
 
       - name: Call Review API
         id: call_review_api
