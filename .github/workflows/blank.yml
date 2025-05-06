@@ -1,55 +1,42 @@
-name: Code Review CI
+name: Code Review Workflow
 
-# Trigger the workflow on every commit to any branch
 on:
   push:
     branches:
-      - '*'  # Trigger on all branches. You can specify specific branches if needed.
+      - main  # or any branch you want to track commits for
 
 jobs:
   review:
-    runs-on: ubuntu-latest  # You can use another OS if needed (ubuntu-latest is used here)
+    runs-on: ubuntu-latest
 
     steps:
+      # Step 1: Checkout the repository with full history
       - name: Checkout code
-        uses: actions/checkout@v2  # This action checks out the code in your repository
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/checkout@v3
         with:
-          python-version: '3.x'  # Use a specific Python version if needed
+          fetch-depth: 0  # Fetch full history to avoid issues with git diff
 
-      - name: Install curl and git
+      # Step 2: Get the diff of the staged changes
+      - name: Get the diff of the current commit
+        id: diff
         run: |
-          sudo apt-get update
-          sudo apt-get install -y curl git jq  # Install curl, git, and jq (for parsing JSON)
+          git diff --cached > diff.txt
+          echo "::set-output name=diff::$(cat diff.txt)"
 
-      - name: Get git diff and send to review API
+      # Step 3: Call the external review API and get the review comment
+      - name: Call external review API and get review comment
+        id: review_api
         run: |
-          # Get the diff of the current commit
-          git diff HEAD^ > diff_output.diff  # Adjust as necessary to capture the diff
+          review_comment=$(curl --location 'http://your-api-url' --form 'file=@diff.txt' --form 'language="python"')
+          echo "::set-output name=review_comment::${review_comment}"
 
-          # Send the git diff to your review API without authentication and capture the response
-          response=$(curl --silent --location 'https://wild-buses-ring.loca.lt/review' \
-            --form 'file=@diff_output.diff' \
-            --form 'language="diff"')
-
-          # Extract review comment from the response (assuming the review is inside the 'review' key)
-          review_comment=$(echo $response | jq -r '.review')
-
-          # Check if jq and response parsing worked
-          if [ "$review_comment" != "null" ]; then
-            echo "Review Comment: $review_comment"
-          else
-            echo "No review comment found in the response."
-          fi
-
-      - name: Comment on commit with review output
+      # Step 4: Add comment to the commit
+      - name: Add comment to commit
         run: |
-          # Add comment on the commit using GitHub API
-          if [[ -n "$review_comment" ]]; then
+          if [[ -n "${{ steps.review_api.outputs.review_comment }}" ]]; then
             curl -X POST \
-              -d "{\"body\": \"$review_comment\"}" \
+              -H "Authorization: token ${{ secrets.GH_TOKEN }}" \
+              -d "{\"body\": \"${{ steps.review_api.outputs.review_comment }}\"}" \
               "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/comments"
           else
             echo "No review comment to post."
